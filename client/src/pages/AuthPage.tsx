@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import SignIn from "./SignIn";
-import SignUp from "./SignUp";
-import { Button } from "./ui/button";
+import SignIn from "../components/SignIn";
+import SignUp from "../components/SignUp";
+import { Button } from "../components/ui/button";
 import { FcGoogle } from "react-icons/fc";
 
 const Auth: React.FC = () => {

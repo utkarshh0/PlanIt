@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import Auth from './components/Auth'
-import Calendar from "./components/Calendar"
+// import Auth from './pages/AuthPage'
+import Calendar from "./pages/EventPage"
 // import { ModeToggle } from "./components/ThemeToggle"
 const App : React.FC = () => {
   return(
