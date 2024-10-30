@@ -17,8 +17,8 @@ const formSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
 })
 
-const onSubmit = (data) => {
-  console.log("Form submitted with data:", data)
+const onSubmit = () => {
+  console.log("Form submitted with data:")
 }
 
 const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {

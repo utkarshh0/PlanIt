@@ -1,5 +1,5 @@
 // src/pages/EventPage.tsx
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/ui/app-sidebar"
 import { Calendar, momentLocalizer } from 'react-big-calendar'
@@ -16,11 +16,12 @@ import {
   DialogClose
 } from "@/components/ui/dialog"
 import { useDispatch, useSelector } from 'react-redux'
-import { setEvents, updateEvent, deleteEvent } from '../store/eventsSlice'
+import { updateEvent, deleteEvent, Event } from '../store/eventsSlice'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { EventsState } from '../store/eventsSlice'
+
 const DnDCalendar = withDragAndDrop(Calendar)
 const myLocalizer = momentLocalizer(moment)
 
@@ -44,17 +45,17 @@ const EventPage: React.FC = () => {
   //   dispatch(setEvents(initialEvents))
   // }, [dispatch])
 
-  const handleSelectEvent = (event: Event) => {
+  const handleSelectEvent = (event: any) => {
     setSelectedEvent(event)
     setIsDialogOpen(true)
   }
 
-  const handleEventChange = ({ start, end }: { start: Date, end: Date }, event: Event) => {
+  const handleEventChange = ({ start, end, event } : any) => {
     const updatedEvent = { ...event, start, end }
     dispatch(updateEvent(updatedEvent))
   }
 
-  const handleDeleteEvent = (eventId: number) => {
+  const handleDeleteEvent = (eventId: string) => {
     dispatch(deleteEvent(eventId))
     setIsDialogOpen(false)
   }
@@ -120,7 +121,7 @@ const EventPage: React.FC = () => {
 
               {/* Delete Event */}
               <Button
-                onClick={() => handleDeleteEvent(selectedEvent?.id as number)}
+                onClick={() => handleDeleteEvent(selectedEvent?.id as string)}
                 className="bg-red-500 text-white"
               >
                 Delete

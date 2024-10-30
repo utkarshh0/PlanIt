@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-interface Event {
+export interface Event {
   id: string  // Changed from number to string
   start: Date
   end: Date
