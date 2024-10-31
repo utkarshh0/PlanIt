@@ -1,0 +1,30 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  email    String  @unique
+  password String
+  createdAt DateTime @default(now())
+  events   Event[]
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  startDate   DateTime 
+  endDate     DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  userId      Int      // Foreign key reference to User
+  user        User     @relation(fields: [userId], references: [id]) // Establish the relationship
+}
