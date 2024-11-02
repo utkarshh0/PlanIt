@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 
 // Create a new event
 export const createEvent = async (req: Request, res: Response) => {
-    const { title, description, startDate, endDate, userId } = req.body
+    const { title, description, startDate, endDate, id } = req.body
 
     try {
         const event = await prisma.event.create({
@@ -14,7 +14,7 @@ export const createEvent = async (req: Request, res: Response) => {
                 description,
                 startDate,
                 endDate,
-                user: { connect: { id: userId } }, // Connect the event to the user
+                user: { connect: { id  : id} }, // Connect the event to the user
             },
         })
         res.status(201).json(event)

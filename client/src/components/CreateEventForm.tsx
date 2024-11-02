@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { Calendar } from "@/components/ui/calendar"
 import { FaPlus } from "react-icons/fa6"
 import {
@@ -12,13 +12,12 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { v4 as uuidv4 } from "uuid"
 import { useDispatch, useSelector } from "react-redux"
-import { setEvents } from "@/store/eventsSlice"
+import { EventsState, setEvents } from "@/store/eventsSlice"
 import { UserState } from "@/store/userSlice"
 
 interface Event {
-  id: string
+  id: string | undefined
   startDate: Date
   endDate: Date
   title: string
@@ -29,8 +28,13 @@ interface uState{
   user : UserState
 }
 
+interface eState {
+  events: EventsState
+}
+
 const CreateEventForm: React.FC = () => {
   const dispatch = useDispatch()
+  const events = useSelector((state: eState) => state.events.events)
   const user = useSelector((state: uState) => state.user?.user)
   console.log(user)
   const [date, setDate] = useState<Date | undefined>(new Date())
@@ -53,12 +57,12 @@ const CreateEventForm: React.FC = () => {
       endDate: eventInfo.endDate,
       title: eventInfo.title,
       description: eventInfo.description,
-      userId : user.id
+      id : user?.id
     }
 
     try {
       // Send POST request to server using fetch
-      const response = await fetch("http://localhost:5000/api/event/", {
+      const response = await fetch("https://planit-amv2.onrender.com/api/event/", {
         method: "POST",
         headers: {
           'Authorization': localStorage.getItem('token') || '',
@@ -66,7 +70,7 @@ const CreateEventForm: React.FC = () => {
         },
         body: JSON.stringify(newEvent),
       })
-
+      console.log(newEvent)
       console.log(response)
       if (!response.ok) {
         throw new Error("Failed to add event")
@@ -159,9 +163,9 @@ const CreateEventForm: React.FC = () => {
           />
 
           <div className="flex justify-end space-x-2">
-            <Button onClick={() => console.log('fsd')} className="bg-blue-500 text-white">
+            <Button onClick={handleCreateEvent} className="bg-blue-500 text-white">
               Create Event
-            </Button>+
+            </Button>
             <DialogClose asChild>
               <Button onClick={() => setIsDialogOpen(false)} className="bg-gray-300">
                 Cancel

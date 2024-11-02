@@ -75,7 +75,7 @@ const EventPage: React.FC = () => {
         const id = decoded.id
   
         // Fetch events using the user's ID
-        const eventResponse = await fetch(`http://localhost:5000/api/event/${id}`, {
+        const eventResponse = await fetch(`https://planit-amv2.onrender.com/api/event/${id}`, {
           headers: {
             'Authorization': token,
             'Content-Type': 'application/json'
@@ -88,7 +88,7 @@ const EventPage: React.FC = () => {
         dispatch(setEvents(eventData))
   
         // Fetch user data using the same ID
-        const userResponse = await fetch(`http://localhost:5000/api/user/get/${id}`, {
+        const userResponse = await fetch(`https://planit-amv2.onrender.com/api/user/get/${id}`, {
           headers: {
             'Authorization': token,
             'Content-Type': 'application/json'
@@ -121,7 +121,7 @@ const EventPage: React.FC = () => {
     console.log("uvs----", updatedEvent)
     try {
       dispatch(updateEvent(updatedEvent))
-      const response = await fetch(`http://localhost:5000/api/event/${event.id}`, {
+      const response = await fetch(`https://planit-amv2.onrender.com/${event.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +145,8 @@ const EventPage: React.FC = () => {
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/event/${eventId}`, {
+      dispatch(deleteEvent(eventId))
+      const response = await fetch(`https://planit-amv2.onrender.com/api/event/${eventId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': localStorage.getItem('token') || '',
@@ -155,7 +156,6 @@ const EventPage: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to delete event')
       }
-      dispatch(deleteEvent(eventId))
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error deleting event:', error)

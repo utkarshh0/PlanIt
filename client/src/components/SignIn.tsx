@@ -36,6 +36,7 @@ const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {
 
 
   const onSubmit = async (data: FormData) => {
+    console.log(data)
     try {
       setLoading(true)
       const response = await fetch("https://planit-amv2.onrender.com/api/user/login", {
@@ -45,6 +46,7 @@ const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {
         },
         body: JSON.stringify(data)
       })
+      console.log(response)
       if (!response.ok) {
         const resp = await response.json()
         setErrorMessage(resp.error || "Server error, please try again.")
