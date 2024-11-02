@@ -19,20 +19,20 @@ const Auth: React.FC = () => {
         ) : (
           <SignUp handleClick={handleClick} />
         )}
-        <div className="flex items-center mt-5">
+        {/* <div className="flex items-center mt-5">
           <span className="border-t flex-grow border-slate-800"></span>
           <span className="px-4 text-gray-500 text-sm">or</span>
           <span className="border-t flex-grow border-slate-800"></span>
-        </div>
+        </div> */}
 
-        <div className="flex justify-center mt-2">
+        {/* <div className="flex justify-center mt-2">
           <Button
             type="button"
             onClick={() => console.log("Continue with Google clicked")}
           >
             <FcGoogle /> Continue with Google
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
