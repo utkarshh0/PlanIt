@@ -11,26 +11,59 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useState } from "react"
+import { ReloadIcon } from "@radix-ui/react-icons"
 
 const formSchema = z.object({
-    username: z.string().min(2, {message: "Please Enter a username"}),
+    name: z.string().min(2, {message: "Please Enter a username"}),
     email: z.string().email({ message: "Please enter a valid email address." }),
-    password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+    password: z.string().min(2, { message: "Password must be at least 2 characters." }),
 })
 
-const onSubmit = () => {
-  console.log("Form submitted with data:")
-}
+type FormData = z.infer<typeof formSchema>
 
 const SignUp: React.FC<{handleClick: () => void}> = ({handleClick}) => {
+  
+  const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      name: "",
       email: "",
       password: "",
     },
   })
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      setLoading(true)
+      setErrorMessage("")
+      const response = await fetch("https://planit-amv2.onrender.com/api/user/signup", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data), // Send the form data as JSON
+      })
+
+      if (!response.ok) {
+        const resp = await response.json()
+        console.log("resp---", resp)
+        setErrorMessage(resp.error || "Failed to sign up. Please try again.")
+        return
+      }
+
+      handleClick() // Redirect or trigger Sign In on success
+
+    } catch (error) {
+      console.error('Error during Signup:', error)
+      setErrorMessage("An unexpected error occurred. Please try again later.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <Form {...form}>
@@ -38,7 +71,7 @@ const SignUp: React.FC<{handleClick: () => void}> = ({handleClick}) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 tracking-wide">
       <FormField
           control={form.control}
-          name="username"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Username</FormLabel>
@@ -77,8 +110,16 @@ const SignUp: React.FC<{handleClick: () => void}> = ({handleClick}) => {
             </FormItem>
           )}
         />
-        
-        <Button type="submit" className="w-full font-bold">Sign Up</Button>
+        {errorMessage && <p className="text-red-500 text-center">{errorMessage}</p>}
+
+        {loading ? 
+            <Button className="w-full font-bold" disabled>
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </Button> 
+                :
+            <Button type="submit" className="w-full font-bold">Sign Up</Button>
+        }
         <p className="text-right text-sm text-gray-500">
           Already have an account?{" "}
           <button 

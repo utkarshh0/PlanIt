@@ -11,18 +11,18 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useState } from "react"
+import { ReloadIcon } from "@radix-ui/react-icons"
+import { useNavigate } from "react-router-dom"
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  password: z.string().min(2, { message: "Password must be at least 2 characters." }),
 })
 
-const onSubmit = () => {
-  console.log("Form submitted with data:")
-}
+type FormData = z.infer<typeof formSchema>
 
 const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {
-  console.log(handleClick)
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -30,6 +30,38 @@ const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {
       password: "",
     },
   })
+  const[loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
+
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      setLoading(true)
+      const response = await fetch("https://planit-amv2.onrender.com/api/user/login", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      if (!response.ok) {
+        const resp = await response.json()
+        setErrorMessage(resp.error || "Server error, please try again.")
+        return
+      }
+
+      const result = await response.json()
+      localStorage.setItem('token', `Bearer ${result.token}`)
+      navigate('/events')
+      
+    } catch (error) {
+      console.error('Error during login:', error)
+      setErrorMessage("An unexpected error occurred. Please try again later.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <Form {...form}>
@@ -62,8 +94,16 @@ const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {
             </FormItem>
           )}
         />
+        {errorMessage && <p className="text-red-500 text-center">{errorMessage}</p>}
         
-        <Button type="submit" className="w-full font-bold">Sign In</Button>
+        {loading ? 
+            <Button className="w-full font-bold" disabled>
+              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+              Please wait
+            </Button> 
+                :
+            <Button type="submit" className="w-full font-bold">Sign In</Button>
+        }
         <p className="text-right text-sm text-gray-500">
           Don’t have an account?{" "}
           <button 

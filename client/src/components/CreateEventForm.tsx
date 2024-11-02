@@ -1,6 +1,5 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { Calendar } from "@/components/ui/calendar"
-import { useState } from "react"
 import { FaPlus } from "react-icons/fa6"
 import {
   Dialog,
@@ -16,55 +15,80 @@ import { Button } from "@/components/ui/button"
 import { v4 as uuidv4 } from "uuid"
 import { useDispatch, useSelector } from "react-redux"
 import { setEvents } from "@/store/eventsSlice"
+import { UserState } from "@/store/userSlice"
 
 interface Event {
   id: string
-  start: Date
-  end: Date
+  startDate: Date
+  endDate: Date
   title: string
   description: string
 }
 
+interface uState{
+  user : UserState
+}
+
 const CreateEventForm: React.FC = () => {
   const dispatch = useDispatch()
-  const events = useSelector((state: { events: { events: Event[] } }) => state.events.events)
+  const user = useSelector((state: uState) => state.user?.user)
+  console.log(user)
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [eventInfo, setEventInfo] = useState<Omit<Event, "id">>({
     title: "",
     description: "",
-    start: date || new Date(),
-    end: date || new Date(), 
+    startDate: date || new Date(),
+    endDate: new Date(new Date().setDate(new Date().getDate() + 1)), // Default end date as next day
   })
 
-  const handleCreateEvent = () => {
-
-    if (!eventInfo.title.trim() || !eventInfo.end || !eventInfo.start) {
+  const handleCreateEvent = async () => {
+    if (!eventInfo.title.trim() || !eventInfo.endDate || !eventInfo.startDate) {
       alert("Please fill in all required fields.")
       return
     }
 
     const newEvent: Event = {
-      id: uuidv4(),
-      start: eventInfo.start,
-      end: new Date(eventInfo.end), 
+      startDate: eventInfo.startDate,
+      endDate: eventInfo.endDate,
       title: eventInfo.title,
       description: eventInfo.description,
+      userId : user.id
     }
 
-    // Dispatch the updated events array
-    dispatch(setEvents([...events, newEvent]))
+    try {
+      // Send POST request to server using fetch
+      const response = await fetch("http://localhost:5000/api/event/", {
+        method: "POST",
+        headers: {
+          'Authorization': localStorage.getItem('token') || '',
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newEvent),
+      })
 
-    console.log("Event Created:", newEvent)
+      console.log(response)
+      if (!response.ok) {
+        throw new Error("Failed to add event")
+      }
 
-    // Reset the event info after creating the event
-    setEventInfo({
-      title: "",
-      description: "",
-      start: date || new Date(),
-      end: date || new Date(),
-    })
-    setIsDialogOpen(false)
+      console.log("Event added to server:", newEvent)
+
+      // Dispatch to Redux store
+      dispatch(setEvents([...events, newEvent]))
+
+      // Reset form
+      setEventInfo({
+        title: "",
+        description: "",
+        startDate: date || new Date(),
+        endDate: new Date(new Date().setDate(new Date().getDate() + 1)),
+      })
+      setIsDialogOpen(false)
+    } catch (error) {
+      console.error("Error adding event:", error)
+      alert("Failed to add event. Please try again.")
+    }
   }
 
   return (
@@ -92,6 +116,7 @@ const CreateEventForm: React.FC = () => {
             onChange={(e) =>
               setEventInfo((prev) => ({ ...prev, title: e.target.value }))
             }
+            required
           />
 
           {/* Event Description Input */}
@@ -102,37 +127,41 @@ const CreateEventForm: React.FC = () => {
             onChange={(e) =>
               setEventInfo((prev) => ({ ...prev, description: e.target.value }))
             }
+            required
           />
 
           {/* Event Start Date */}
           <Input
             type="date"
             className="mb-4"
-            value={eventInfo.start?.toISOString().split("T")[0] || ""}
+            value={eventInfo.startDate?.toISOString().split("T")[0] || ""}
             onChange={(e) =>
               setEventInfo((prev) => ({
                 ...prev,
-                start: new Date(e.target.value),
+                startDate: new Date(e.target.value),
               }))
             }
+            required
           />
 
           {/* Event End Date */}
           <Input
             type="date"
             className="mb-4"
+            value={eventInfo.endDate?.toISOString().split("T")[0] || ""}
             onChange={(e) =>
               setEventInfo((prev) => ({
                 ...prev,
-                end: new Date(e.target.value),
+                endDate: new Date(e.target.value),
               }))
             }
+            required
           />
 
           <div className="flex justify-end space-x-2">
-            <Button onClick={handleCreateEvent} className="bg-blue-500 text-white">
+            <Button onClick={() => console.log('fsd')} className="bg-blue-500 text-white">
               Create Event
-            </Button>
+            </Button>+
             <DialogClose asChild>
               <Button onClick={() => setIsDialogOpen(false)} className="bg-gray-300">
                 Cancel
@@ -146,8 +175,8 @@ const CreateEventForm: React.FC = () => {
         <Calendar
           mode="single"
           selected={date}
-          onSelect={setDate} 
-          className="rounded-md border cursor-pointer" 
+          onSelect={setDate}
+          className="rounded-md border cursor-pointer"
         />
       </div>
     </div>

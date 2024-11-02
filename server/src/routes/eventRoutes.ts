@@ -4,8 +4,8 @@ import { createEvent, getUserEvents, updateEvent, deleteEvent } from '../control
 const router = express.Router()
 
 router.post('/', createEvent)        
-router.get('/', getUserEvents)
-router.put('/', updateEvent)     
-router.delete('/', deleteEvent)  
+router.get('/:userId', getUserEvents)
+router.put('/:eventId', updateEvent)     
+router.delete('/:eventId', deleteEvent)  
 
 export default router
