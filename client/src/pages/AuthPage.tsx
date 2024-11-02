@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import SignIn from "../components/SignIn";
 import SignUp from "../components/SignUp";
-import { Button } from "../components/ui/button";
-import { FcGoogle } from "react-icons/fc";
+// import { Button } from "../components/ui/button";
+// import { FcGoogle } from "react-icons/fc";
 
 const Auth: React.FC = () => {
   const [isSignIn, setIsSignIn] = useState(true);
