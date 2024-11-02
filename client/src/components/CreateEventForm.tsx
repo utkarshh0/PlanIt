@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { useDispatch, useSelector } from "react-redux"
 import { EventsState, setEvents } from "@/store/eventsSlice"
 import { UserState } from "@/store/userSlice"
+import { ReloadIcon } from "@radix-ui/react-icons"
 
 interface Event {
   id: string | undefined
@@ -24,8 +25,8 @@ interface Event {
   description: string
 }
 
-interface uState{
-  user : UserState
+interface uState {
+  user: UserState
 }
 
 interface eState {
@@ -36,19 +37,29 @@ const CreateEventForm: React.FC = () => {
   const dispatch = useDispatch()
   const events = useSelector((state: eState) => state.events.events)
   const user = useSelector((state: uState) => state.user?.user)
-  console.log(user)
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [eventInfo, setEventInfo] = useState<Omit<Event, "id">>({
     title: "",
     description: "",
     startDate: date || new Date(),
-    endDate: new Date(new Date().setDate(new Date().getDate() + 1)), // Default end date as next day
+    endDate: new Date(new Date().setDate(new Date().getDate() + 1)),
   })
+  
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const handleCreateEvent = async () => {
+    setErrorMessage(null) // Reset error message
+
+    // Validate input fields
     if (!eventInfo.title.trim() || !eventInfo.endDate || !eventInfo.startDate) {
-      alert("Please fill in all required fields.")
+      setErrorMessage("Please fill in all required fields.")
+      return
+    }
+
+    if (eventInfo.endDate <= eventInfo.startDate) {
+      setErrorMessage("End date must be after the start date.")
       return
     }
 
@@ -57,11 +68,11 @@ const CreateEventForm: React.FC = () => {
       endDate: eventInfo.endDate,
       title: eventInfo.title,
       description: eventInfo.description,
-      id : user?.id
+      id: user?.id
     }
 
     try {
-      // Send POST request to server using fetch
+      setLoading(true)
       const response = await fetch("https://planit-amv2.onrender.com/api/event/", {
         method: "POST",
         headers: {
@@ -70,13 +81,10 @@ const CreateEventForm: React.FC = () => {
         },
         body: JSON.stringify(newEvent),
       })
-      console.log(newEvent)
-      console.log(response)
+
       if (!response.ok) {
         throw new Error("Failed to add event")
       }
-
-      console.log("Event added to server:", newEvent)
 
       // Dispatch to Redux store
       dispatch(setEvents([...events, newEvent]))
@@ -91,7 +99,9 @@ const CreateEventForm: React.FC = () => {
       setIsDialogOpen(false)
     } catch (error) {
       console.error("Error adding event:", error)
-      alert("Failed to add event. Please try again.")
+      setErrorMessage("Failed to add event. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -111,6 +121,10 @@ const CreateEventForm: React.FC = () => {
           <DialogDescription>
             Fill in the details of the event below.
           </DialogDescription>
+
+          {errorMessage && (
+            <div className="mb-2 text-red-600">{errorMessage}</div>
+          )}
 
           {/* Event Title Input */}
           <Input
@@ -163,9 +177,16 @@ const CreateEventForm: React.FC = () => {
           />
 
           <div className="flex justify-end space-x-2">
-            <Button onClick={handleCreateEvent} className="bg-blue-500 text-white">
-              Create Event
-            </Button>
+            {loading ? (
+              <Button className="font-bold" disabled>
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </Button>
+            ) : (
+              <Button onClick={handleCreateEvent} className="bg-blue-500 text-white">
+                Create Event
+              </Button>
+            )}
             <DialogClose asChild>
               <Button onClick={() => setIsDialogOpen(false)} className="bg-gray-300">
                 Cancel

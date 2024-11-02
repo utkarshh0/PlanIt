@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { jwtDecode } from "jwt-decode";
 import { setUser } from '@/store/userSlice'
 import { JwtPayload } from 'jwt-decode'
+import { ReloadIcon } from '@radix-ui/react-icons'
 
 const DnDCalendar = withDragAndDrop(Calendar)
 const myLocalizer = momentLocalizer(moment)
@@ -49,7 +50,6 @@ interface CustomJwtPayload extends JwtPayload {
 const EventPage: React.FC = () => {
   const dispatch = useDispatch()
   const events = useSelector((state: eState) => state.events.events)
-  console.log("evs----", events)
 
   const mappedEvents = events.map(event => ({
     ...event,
@@ -59,12 +59,14 @@ const EventPage: React.FC = () => {
   
   const [selectedEvent, setSelectedEvent] = useState<selectedEvent | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [isFetching, setIsFetching] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     const fetchEventsAndUser = async () => {
       try {
-        setLoading(true)
+        setIsFetching(true)
         const token = localStorage.getItem('token')
         if (!token) {
           throw new Error('No token found')
@@ -98,13 +100,12 @@ const EventPage: React.FC = () => {
           throw new Error('Failed to fetch user data')
         }
         const userData = await userResponse.json()
-        console.log("uD---", userData)
         dispatch(setUser(userData)) 
   
       } catch (error) {
         console.error('Error fetching events or user data:', error)
       } finally {
-        setLoading(false)
+        setIsFetching(false)
       }
     }
   
@@ -118,10 +119,9 @@ const EventPage: React.FC = () => {
 
   const handleEventChange = async ({ start, end, event }: any) =>  {
     const updatedEvent = { ...event, startDate: start, endDate: end }
-    console.log("uvs----", updatedEvent)
     try {
-      dispatch(updateEvent(updatedEvent))
-      const response = await fetch(`https://planit-amv2.onrender.com/${event.id}`, {
+      setSaving(true)
+      const response = await fetch(`https://planit-amv2.onrender.com/api/event/${event.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -138,14 +138,18 @@ const EventPage: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to update event')
       }
+      dispatch(updateEvent(updatedEvent))
     } catch (error) {
       console.error('Error updating event:', error)
+    } finally{
+      setSaving(false)
     }
+
   }
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
-      dispatch(deleteEvent(eventId))
+      setDeleting(true)
       const response = await fetch(`https://planit-amv2.onrender.com/api/event/${eventId}`, {
         method: 'DELETE',
         headers: {
@@ -156,9 +160,12 @@ const EventPage: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to delete event')
       }
+      dispatch(deleteEvent(eventId))
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error deleting event:', error)
+    } finally{
+      setDeleting(false)
     }
   }
 
@@ -173,14 +180,11 @@ const EventPage: React.FC = () => {
     setIsDialogOpen(false)
   }
 
-  if (loading) { 
+  if (isFetching) { 
     return (
-      <div className="flex flex-col space-y-3">
-        <Skeleton className="h-[125px] w-[250px] rounded-xl" />
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-[250px]" />
-          <Skeleton className="h-4 w-[200px]" />
-        </div>
+      <div className="w-screen h-screen flex flex justify-center items-center p-8 gap-4 space-y-3">
+          <Skeleton className="h-full w-1/5 rounded-xl" />
+          <Skeleton className="h-full w-4/5 rounded-xl" />
       </div>
     )
   }
@@ -247,20 +251,34 @@ const EventPage: React.FC = () => {
 
             <div className="flex justify-end space-x-2">
               {/* Save Changes */}
-              <Button
+              {saving ? (
+                <Button className="font-bold" disabled>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </Button>
+                ) : (
+                <Button
                 onClick={handleEditSubmit}
                 className="bg-blue-500 text-white"
-              >
-                Save
-              </Button>
+                >
+                  Save
+                </Button>
+              )}
 
               {/* Delete Event */}
-              <Button
-                onClick={() => handleDeleteEvent(selectedEvent?.id as string)}
-                className="bg-red-500 text-white"
-              >
-                Delete
-              </Button>
+              {deleting ? (
+                <Button className="font-bold" disabled>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </Button>
+                ) : (
+                <Button
+                  onClick={() => handleDeleteEvent(selectedEvent?.id as string)}
+                  className="bg-red-500 text-white"
+                  >
+                    Delete
+                </Button>
+              )}
 
               {/* Close Dialog */}
               <DialogClose asChild>
