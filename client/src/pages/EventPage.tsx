@@ -41,8 +41,6 @@ interface selectedEvent {
   description: string
 }
 
-
-
 interface CustomJwtPayload extends JwtPayload {
   id: number 
 }
@@ -60,8 +58,8 @@ const EventPage: React.FC = () => {
   const [selectedEvent, setSelectedEvent] = useState<selectedEvent | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isFetching, setIsFetching] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     const fetchEventsAndUser = async () => {
@@ -117,10 +115,11 @@ const EventPage: React.FC = () => {
     setIsDialogOpen(true)
   }
 
+
   const handleEventChange = async ({ start, end, event }: any) =>  {
     const updatedEvent = { ...event, startDate: start, endDate: end }
     try {
-      setSaving(true)
+      setIsSaving(true)
       const response = await fetch(`https://planit-amv2.onrender.com/api/event/${event.id}`, {
         method: 'PUT',
         headers: {
@@ -142,14 +141,14 @@ const EventPage: React.FC = () => {
     } catch (error) {
       console.error('Error updating event:', error)
     } finally{
-      setSaving(false)
+      setIsSaving(false)
     }
-
   }
+
 
   const handleDeleteEvent = async (eventId: string) => {
     try {
-      setDeleting(true)
+      setIsDeleting(true)
       const response = await fetch(`https://planit-amv2.onrender.com/api/event/${eventId}`, {
         method: 'DELETE',
         headers: {
@@ -157,6 +156,7 @@ const EventPage: React.FC = () => {
           'Content-Type': 'application/json'
         }
       })
+      
       if (!response.ok) {
         throw new Error('Failed to delete event')
       }
@@ -165,13 +165,14 @@ const EventPage: React.FC = () => {
     } catch (error) {
       console.error('Error deleting event:', error)
     } finally{
-      setDeleting(false)
+      setIsDeleting(false)
     }
   }
 
-  const handleEditSubmit = () => {
+
+  const handleEditSubmit = async () => {
     if (selectedEvent) {
-      handleEventChange({ 
+      await handleEventChange({ 
         start: selectedEvent.start, 
         end: selectedEvent.end, 
         event: selectedEvent 
@@ -251,22 +252,22 @@ const EventPage: React.FC = () => {
 
             <div className="flex justify-end space-x-2">
               {/* Save Changes */}
-              {saving ? (
+              {isSaving ? (
                 <Button className="font-bold" disabled>
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </Button>
                 ) : (
                 <Button
-                onClick={handleEditSubmit}
-                className="bg-blue-500 text-white"
+                  onClick={handleEditSubmit}
+                  className="bg-blue-500 text-white"
                 >
                   Save
                 </Button>
               )}
 
               {/* Delete Event */}
-              {deleting ? (
+              {isDeleting ? (
                 <Button className="font-bold" disabled>
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                   Deleting...

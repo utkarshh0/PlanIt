@@ -47,7 +47,7 @@ export const updateEvent = async (req: Request, res: Response) : Promise<any> =>
 
     // Basic validation
     console.log("logged", id, title, description, startDate, endDate);
-    if (!id || !title || !description || !startDate || !endDate) {
+    if (!title || !startDate || !endDate) {
         return res.status(400).json({ error: 'All fields are required' })
     }
 

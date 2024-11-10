@@ -50,7 +50,6 @@ const SignUp: React.FC<{handleClick: () => void}> = ({handleClick}) => {
 
       if (!response.ok) {
         const resp = await response.json()
-        console.log("resp---", resp)
         setErrorMessage(resp.error || "Failed to sign up. Please try again.")
         return
       }
