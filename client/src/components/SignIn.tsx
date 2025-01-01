@@ -26,8 +26,8 @@ const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "utk@gmail.com",
+      password: "utkk",
     },
   })
   const[loading, setLoading] = useState(false);
@@ -65,6 +65,11 @@ const SignIn: React.FC<{handleClick: () => void}> = ({handleClick}) => {
 
   return (
     <Form {...form}>
+      <div className="absolute top-5 right-5 text-xs opacity-75">
+        <p>Demo User</p>
+        <p>Email : utk@gmail.com</p>
+        <p>Password : utkk</p>
+      </div>
       <p className="text-3xl font-bold tracking-wider text-center mb-2">Sign In</p>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 tracking-wide">
         <FormField
